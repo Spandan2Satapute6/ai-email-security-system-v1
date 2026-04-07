@@ -3,6 +3,7 @@ import time
 import sys
 import os
 from openai import OpenAI
+from grader import grade   # 🔥 IMPORTANT
 
 
 # 🔥 LLM CLIENT (Meta LiteLLM Proxy)
@@ -35,62 +36,6 @@ class OpenEnvClient:
         return self.post("classify", {"text": text})
 
 
-# 🔥 FINAL TASK-AWARE GRADER
-def compute_reward(output, task):
-    intent = output.get("intent", "safe")
-    confidence = float(output.get("confidence", 0.5))
-    risk = output.get("risk_level", "low")
-    explanation = output.get("explanation", "")
-
-    reward = 0.2
-
-    # -------- EASY TASK --------
-    if task == "easy_task":
-        if intent in ["spam", "phishing"]:
-            reward += 0.3
-        else:
-            reward += 0.2
-
-        if confidence > 0.5:
-            reward += 0.2
-
-    # -------- MEDIUM TASK --------
-    elif task == "medium_task":
-        if intent in ["spam", "phishing", "safe", "suspicious"]:
-            reward += 0.2
-
-        if confidence > 0.6:
-            reward += 0.3
-        else:
-            reward += 0.1
-
-        if risk in ["high", "low"]:
-            reward += 0.2
-
-    # -------- HARD TASK --------
-    elif task == "hard_task":
-        if intent in ["spam", "phishing", "safe", "suspicious"]:
-            reward += 0.2
-
-        if confidence > 0.6:
-            reward += 0.2
-
-        expected_risk = "high" if intent in ["spam", "phishing"] else "low"
-        if risk == expected_risk:
-            reward += 0.2
-
-        if explanation and len(explanation) > 10:
-            reward += 0.2
-        else:
-            reward += 0.1
-
-    else:
-        reward = 0.5
-
-    # 🔥 STRICT RANGE (CRITICAL)
-    return max(0.1, min(0.9, reward))
-
-
 def main():
     print("[START]")
 
@@ -110,9 +55,9 @@ def main():
             client.reset()
             time.sleep(0.1)
 
-            # 🔥 MANDATORY LLM CALL (Meta requirement)
+            # 🔥 REQUIRED: LLM CALL
             try:
-                response = client_llm.chat.completions.create(
+                client_llm.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
                         {"role": "user", "content": f"Classify this email: {email}"}
@@ -121,11 +66,11 @@ def main():
             except Exception as e:
                 print("LLM API error:", e)
 
-            # 🔥 Your existing classification
+            # 🔥 Classification
             result = client.classify(email)
 
-            # 🔥 TASK-AWARE REWARD
-            reward = compute_reward(result, task)
+            # 🔥 USE OFFICIAL GRADER (CRITICAL FIX)
+            reward = grade(result, task)
 
             print(f"{task} → reward: {reward}")
             rewards.append(reward)
@@ -146,5 +91,4 @@ if __name__ == "__main__":
     except Exception as e:
         print("Fatal error:", e)
 
-    # 🔥 NEVER CRASH
     sys.exit(0)
