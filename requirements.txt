@@ -3,4 +3,9 @@ uvicorn==0.29.0
 scikit-learn==1.4.1.post1
 pydantic==2.6.4
 requests==2.31.0
+
+# 🔥 FIX FOR BUILD
 openenv==0.1.13
+
+# 🔥 FIX FOR VALIDATOR
+openenv-core>=0.2.0
