@@ -81,8 +81,8 @@ def grade(observation: Dict[str, Any], task: str) -> float:
         else:
             score = 0.55
 
-        # Final clamp (strict)
-        score = max(0.25, min(0.9, score))
+        # Final clamp (strict - ensure strictly between 0 and 1)
+        score = max(0.1, min(0.95, score))
 
         return float(score)
 
