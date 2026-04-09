@@ -21,61 +21,61 @@ def grade(observation: Dict[str, Any], task: str) -> float:
             score = 0.35
 
             if intent in ["spam", "phishing"]:
-                score += 0.03
-            elif intent == "safe":
                 score += 0.02
+            elif intent == "safe":
+                score += 0.01
 
             if confidence > 0.7:
-                score += 0.02
+                score += 0.01
 
             # Clamp to easy range
-            score = max(0.30, min(0.40, score))
+            score = max(0.31, min(0.39, score))
 
         # -------- MEDIUM TASK (0.55-0.70) --------
         elif task == "medium_task":
             score = 0.62
 
             if intent in ["spam", "phishing", "safe"]:
-                score += 0.04
+                score += 0.03
             else:
-                score += 0.02
+                score += 0.01
 
             if confidence > 0.6:
-                score += 0.04
+                score += 0.03
             else:
-                score -= 0.02
+                score -= 0.01
 
             if risk in ["high", "low"]:
-                score += 0.02
+                score += 0.01
 
             # Clamp to medium range
-            score = max(0.55, min(0.70, score))
+            score = max(0.56, min(0.69, score))
 
         # -------- HARD TASK (0.75-0.90) --------
         elif task == "hard_task":
             score = 0.82
 
             if intent in ["spam", "phishing", "safe"]:
-                score += 0.04
+                score += 0.03
             else:
-                score += 0.02
+                score += 0.01
 
             if confidence > 0.7:
-                score += 0.04
-            else:
-                score -= 0.02
-
-            expected_risk = "high" if intent in ["spam", "phishing"] else "low"
-            if risk == expected_risk:
                 score += 0.03
             else:
                 score -= 0.01
 
-            if len(explanation) > 20:
+            expected_risk = "high" if intent in ["spam", "phishing"] else "low"
+            if risk == expected_risk:
                 score += 0.02
+            else:
+                score -= 0.01
+
+            if len(explanation) > 20:
+                score += 0.01
 
             # Clamp to hard range
-            score = max(0.75, min(0.90, score))
+            score = max(0.76, min(0.89, score))
 
         # -------- FALLBACK --------
         else:
