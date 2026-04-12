@@ -1,6 +1,23 @@
 import sys
 import os
 import time
+import math
+
+
+EPSILON = 1e-6
+
+
+def _strict_unit_interval(value):
+    """Clamp numeric values to the open interval (0, 1)."""
+    try:
+        numeric = float(value)
+    except Exception:
+        numeric = 0.5
+
+    if not math.isfinite(numeric):
+        numeric = 0.5
+
+    return float(max(EPSILON, min(1.0 - EPSILON, numeric)))
 
 # ---- SAFE IMPORTS ----
 try:
@@ -173,14 +190,15 @@ def main():
                 }
 
             # ---- 5. GRADER (STRICT)
-            reward = grade(observation, task)
+            reward = _strict_unit_interval(grade(observation, task))
 
-            print(f"[STEP] {task}: {reward:.3f}")
+            # Print enough precision to avoid boundary rounding like 0.999999 -> 1.000.
+            print(f"[STEP] {task}: {reward:.6f}")
             rewards.append(reward)
 
         except Exception as e:
             print(f"Task error {task}: {e}")
-            rewards.append(0.55)
+            rewards.append(_strict_unit_interval(0.55))
 
         print("[END]")
 
