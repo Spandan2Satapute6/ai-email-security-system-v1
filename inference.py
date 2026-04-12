@@ -46,7 +46,7 @@ except Exception as e:
 try:
     llm_client = OpenAI(
         base_url=os.environ["API_BASE_URL"],
-        api_key=os.environ["API_KEY"]
+        api_key=os.environ["HF_TOKEN"]
     )
 except Exception as e:
     print(f"LLM client initialization failed: {e}")
@@ -54,7 +54,7 @@ except Exception as e:
     try:
         llm_client = OpenAI(
             base_url=os.environ.get("API_BASE_URL", "https://api.openai.com/v1"),
-            api_key=os.environ.get("API_KEY", "dummy-key-for-meta-validation")
+            api_key=os.environ.get("HF_TOKEN", "dummy-key-for-meta-validation")
         )
     except Exception:
         llm_client = None
@@ -112,8 +112,6 @@ class OpenEnvClient:
 
 
 def main():
-    print("[START]")
-
     env_client = OpenEnvClient()
 
     # ---- EXACT 3 TASKS
@@ -125,8 +123,10 @@ def main():
 
     rewards = []
 
-    # ---- LOOP THROUGH ALL TASKS
+    # ---- SEPARATE [START]/[END] BLOCKS FOR EACH TASK
     for task, email in tasks.items():
+        print("[START]")
+        
         try:
             # ---- 1. RESET ENVIRONMENT
             env_client.reset()
@@ -182,10 +182,10 @@ def main():
             print(f"Task error {task}: {e}")
             rewards.append(0.55)
 
-    # ---- FINAL OUTPUT
-    avg_score = sum(rewards) / len(rewards) if rewards else 0.55
+        print("[END]")
 
-    print("[END]")
+    # ---- FINAL SUMMARY
+    avg_score = sum(rewards) / len(rewards) if rewards else 0.55
     print(f"Final average score: {avg_score:.3f}")
 
     # ---- GUARANTEED EXIT
